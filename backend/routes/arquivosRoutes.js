@@ -1,14 +1,12 @@
 const express = require("express");
 const router = express.Router();
-const upload = require("../middlewares/uploadMiddleware");
+const upload = require("../middlewares/upload");
+const arquivosController = require("../controllers/arquivosController");
 
-router.post("/upload", upload.single("arquivo"), (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ erro: "Nenhum arquivo enviado" });
-  }
+// Upload
+router.post("/", upload.single("arquivo"), arquivosController.uploadArquivo);
 
-  const url = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
-  res.status(201).json({ mensagem: "Upload feito com sucesso!", url });
-});
+// Listar
+router.get("/", arquivosController.listarArquivos);
 
 module.exports = router;

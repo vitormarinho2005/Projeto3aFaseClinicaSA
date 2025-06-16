@@ -17,7 +17,7 @@ async function registrar(req, res) {
 
     res.status(201).json(resultado.rows[0]);
   } catch (err) {
-    console.error(err);
+    console.error("Erro ao registrar usuário:", err);
     res.status(500).json({ erro: "Erro ao registrar usuário" });
   }
 }
@@ -48,7 +48,7 @@ async function login(req, res) {
 
     res.json({ token });
   } catch (err) {
-    console.error(err);
+    console.error("Erro ao fazer login:", err);
     res.status(500).json({ erro: "Erro ao fazer login" });
   }
 }

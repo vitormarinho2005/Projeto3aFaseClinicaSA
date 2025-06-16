@@ -1,50 +1,36 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import PrivateRoute from './components/PrivateRoute';
-import CadastroUsuarioCompleto from './pages/CadastroUsuarioCompleto';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import Pacientes from "./pages/Pacientes";
+import Consultas from "./pages/Consultas";
+import Uploads from "./pages/Uploads";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Principal from './components/Principal'; 
 
-function App() {
-  const [usuario, setUsuario] = useState(null);
-
-  useEffect(() => {
-    const usuarioStorage = localStorage.getItem('usuario');
-    if (usuarioStorage) {
-      setUsuario(JSON.parse(usuarioStorage));
-    }
-  }, []);
-
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('usuario');
-    setUsuario(null);
-  };
-
+export default function App() {
   return (
-    <Router>
+    <BrowserRouter>
       <Routes>
-        <Route path="/login" element={<Login onLogin={setUsuario} />} />
+        <Route path="/" element={<Login />} />
+        <Route path="/principal" element={<Principal />} />
         <Route
           path="/dashboard"
-          element={
-            <PrivateRoute>
-              <Dashboard usuario={usuario} onLogout={logout} />
-            </PrivateRoute>
-          }
+          element={<ProtectedRoute><Dashboard /></ProtectedRoute>}
         />
         <Route
-          path="/cadastro-completo"
-          element={
-            <PrivateRoute>
-              <CadastroUsuarioCompleto />
-            </PrivateRoute>
-          }
+          path="/pacientes"
+          element={<ProtectedRoute><Pacientes /></ProtectedRoute>}
         />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="*" element={<Navigate to={usuario ? "/dashboard" : "/login"} replace />} />
+        <Route
+          path="/consultas"
+          element={<ProtectedRoute><Consultas /></ProtectedRoute>}
+        />
+        <Route
+          path="/uploads"
+          element={<ProtectedRoute><Uploads /></ProtectedRoute>}
+        />
+        <Route path="*" element={<div className="p-8 text-center text-red-600">Página não encontrada</div>} />
       </Routes>
-    </Router>
+    </BrowserRouter>
   );
 }
-
-export default App;
