@@ -9,16 +9,24 @@ export default function Pacientes() {
   useEffect(() => { listar(); }, []);
 
   async function listar() {
-    const res = await api.get("/pacientes");
-    setPacientes(res.data);
+    try {
+      const res = await api.get("/pacientes");
+      setPacientes(res.data);
+    } catch (err) {
+      console.error("Erro ao listar pacientes:", err);
+    }
   }
 
   async function cadastrar(e) {
     e.preventDefault();
     if (!nome.trim()) return;
-    await api.post("/pacientes", { nome });
-    setNome("");
-    listar();
+    try {
+      await api.post("/pacientes", { nome });
+      setNome("");
+      listar();
+    } catch (err) {
+      console.error("Erro ao cadastrar paciente:", err);
+    }
   }
 
   return (

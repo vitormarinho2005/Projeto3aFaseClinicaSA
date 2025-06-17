@@ -1,12 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const upload = require("../middlewares/upload");
-const arquivosController = require("../controllers/arquivosController");
+const autenticarToken = require("../middlewares/authMiddleware");
+const { listarArquivos } = require("../controllers/arquivosController");
 
-// Upload
-router.post("/", upload.single("arquivo"), arquivosController.uploadArquivo);
-
-// Listar
-router.get("/", arquivosController.listarArquivos);
+router.get("/arquivos", autenticarToken, listarArquivos);
 
 module.exports = router;

@@ -7,6 +7,7 @@ export default function Consultas() {
   const [consultas, setConsultas] = useState([]);
   const [pacienteId, setPacienteId] = useState("");
   const [dataHora, setDataHora] = useState("");
+  const [erro, setErro] = useState("");
 
   useEffect(() => {
     listarPacientes();
@@ -14,25 +15,41 @@ export default function Consultas() {
   }, []);
 
   async function listarPacientes() {
-    const res = await api.get("/pacientes");
-    setPacientes(res.data);
+    try {
+      const res = await api.get("/pacientes");
+      setPacientes(res.data);
+    } catch (err) {
+      console.error("Erro ao listar pacientes:", err);
+      setErro("Erro ao listar pacientes");
+    }
   }
 
   async function listarConsultas() {
-    const res = await api.get("/consultas");
-    setConsultas(res.data);
+    try {
+      const res = await api.get("/consultas"); // com token
+      setConsultas(res.data); // CORREÇÃO! setar state
+    } catch (err) {
+      console.error("Erro ao listar consultas:", err);
+      setErro("Erro ao listar consultas");
+    }
   }
 
   async function cadastrar(e) {
     e.preventDefault();
     if (!pacienteId || !dataHora) return;
-    await api.post("/consultas", {
-      paciente_id: pacienteId,
-      data: dataHora,
-    });
-    setPacienteId("");
-    setDataHora("");
-    listarConsultas();
+
+    try {
+      await api.post("/consultas", {
+        paciente_id: pacienteId,
+        data: dataHora,
+      });
+      setPacienteId("");
+      setDataHora("");
+      listarConsultas(); // atualiza lista
+    } catch (err) {
+      console.error("Erro ao agendar consulta:", err);
+      setErro("Erro ao agendar consulta");
+    }
   }
 
   return (
@@ -40,6 +57,8 @@ export default function Consultas() {
       <Navbar />
       <div className="p-6">
         <h2 className="text-2xl font-semibold mb-4">Consultas</h2>
+
+        {erro && <div className="text-red-500 mb-4">{erro}</div>}
 
         <form onSubmit={cadastrar} className="flex flex-col md:flex-row gap-2 mb-4">
           <select
@@ -59,7 +78,7 @@ export default function Consultas() {
             value={dataHora}
             onChange={(e) => setDataHora(e.target.value)}
           />
-          <button className="bg-blue-600 text-white px-4 rounded">Agendar</button>
+          <button type="submit" className="bg-blue-600 text-white px-4 rounded">Agendar</button>
         </form>
 
         <ul className="bg-white p-4 rounded shadow">

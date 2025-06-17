@@ -13,6 +13,6 @@ router.get('/consultas-medicos-mes', authMiddleware, consultasPorMedicoMes);
 router.get('/consultas-medicos-periodo', authMiddleware, consultasPorMedicoPeriodo);
 router.get('/consultas-dia-semana', authMiddleware, consultasPorDiaSemana);
 router.get('/consultas-dia-semana-periodo', authMiddleware, consultasPorDiaSemanaPeriodo);
-router.get('/dashboard', authMiddleware, obterEstatisticas);
+router.get('/', authMiddleware, obterEstatisticas);
 
 module.exports = router;

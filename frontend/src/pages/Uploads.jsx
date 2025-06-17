@@ -3,10 +3,10 @@ import Navbar from "../components/Navbar";
 import api from "../services/api";
 
 export default function Uploads() {
-  const [pacientes, setPacientes] = useState([]);
-  const [pacienteId, setPacienteId] = useState("");
   const [arquivo, setArquivo] = useState(null);
+  const [pacienteId, setPacienteId] = useState("");
   const [arquivos, setArquivos] = useState([]);
+  const [pacientes, setPacientes] = useState([]);
 
   useEffect(() => {
     listarPacientes();
@@ -14,23 +14,53 @@ export default function Uploads() {
   }, []);
 
   async function listarPacientes() {
-    const res = await api.get("/pacientes");
-    setPacientes(res.data);
+    const token = localStorage.getItem("token");
+    try {
+      const res = await api.get("/pacientes", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setPacientes(res.data);
+    } catch (error) {
+      console.error("Erro ao listar pacientes:", error);
+    }
   }
 
   async function listarArquivos() {
-    const res = await api.get("/arquivos");
-    setArquivos(res.data);
+    const token = localStorage.getItem("token");
+    try {
+      const res = await api.get("/arquivos", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setArquivos(res.data);
+    } catch (error) {
+      console.error("Erro ao listar arquivos:", error);
+    }
   }
 
   async function enviar(e) {
     e.preventDefault();
+    const token = localStorage.getItem("token");
+    if (!arquivo || !pacienteId) {
+      alert("Selecione um arquivo e um paciente");
+      return;
+    }
+
     const formData = new FormData();
     formData.append("arquivo", arquivo);
     formData.append("paciente_id", pacienteId);
-    await api.post("/arquivos", formData);
-    setArquivo(null);
-    listarArquivos();
+
+    try {
+      await api.post("/arquivos", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      setArquivo(null);
+      listarArquivos();
+    } catch (error) {
+      console.error("Erro ao enviar arquivo:", error);
+    }
   }
 
   return (

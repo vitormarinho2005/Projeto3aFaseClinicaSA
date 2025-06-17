@@ -1,15 +1,24 @@
 const jwt = require("jsonwebtoken");
 
-const JWT_SECRET = process.env.JWT_SECRET || "segredo";
-
 function autenticarToken(req, res, next) {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader?.split(" ")[1];
+  const authHeader = req.headers.authorization;
 
-  if (!token) return res.status(401).json({ erro: "Token ausente" });
+  if (!authHeader) {
+    return res.status(403).json({ erro: "Token não fornecido" });
+  }
 
-  jwt.verify(token, JWT_SECRET, (err, usuario) => {
-    if (err) return res.status(403).json({ erro: "Token inválido" });
+  const token = authHeader.split(" ")[1];
+  if (!token) {
+    return res.status(403).json({ erro: "Token inválido" });
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, usuario) => {
+    if (err) {
+      if (err.name === "TokenExpiredError") {
+        return res.status(401).json({ erro: "Token expirado" }); // status 401 para token expirado
+      }
+      return res.status(403).json({ erro: "Token inválido" });
+    }
     req.usuario = usuario;
     next();
   });

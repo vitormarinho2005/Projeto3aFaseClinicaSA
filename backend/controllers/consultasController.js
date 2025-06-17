@@ -109,10 +109,28 @@ async function deletarConsulta(req, res) {
   }
 }
 
+async function obterEstatisticas(req, res) {
+  try {
+    const estatisticas = {
+      totalConsultas: 100,
+      consultasPorMedico: [
+        { medico: "Dr. João", total: 40 },
+        { medico: "Dra. Maria", total: 60 },
+      ],
+    };
+
+    res.json(estatisticas);
+  } catch (error) {
+    console.error("Erro ao obter estatísticas:", error);
+    res.status(500).json({ erro: "Erro interno do servidor" });
+  }
+}
+
 module.exports = {
   listarConsultas,
   buscarConsulta,
   criarConsulta,
   atualizarConsulta,
   deletarConsulta,
+  obterEstatisticas,
 };

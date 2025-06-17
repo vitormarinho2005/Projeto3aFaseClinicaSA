@@ -130,3 +130,64 @@ exports.obterEstatisticas = async (req, res) => {
         res.status(500).json({ erro: err.message });
     }
 };
+
+exports.obterEstatisticas = async (req, res) => {
+    try {
+        // Total de consultas hoje
+        const consultasHojeResult = await pool.query(`
+            SELECT COUNT(*) AS total
+            FROM consultas
+            WHERE DATE(data) = CURRENT_DATE
+        `);
+        const consultasHoje = parseInt(consultasHojeResult.rows[0]?.total) || 0;
+
+        // Total de pacientes ativos (exemplo: status = 'ativo')
+        const pacientesAtivosResult = await pool.query(`
+            SELECT COUNT(*) AS total
+            FROM pacientes
+            WHERE status = 'ativo'
+        `);
+        const pacientesAtivos = parseInt(pacientesAtivosResult.rows[0]?.total) || 0;
+
+        // Novos cadastros no mês atual
+        const novosCadastrosResult = await pool.query(`
+            SELECT COUNT(*) AS total
+            FROM pacientes
+            WHERE DATE_TRUNC('month', data_cadastro) = DATE_TRUNC('month', CURRENT_DATE)
+        `);
+        const novosCadastros = parseInt(novosCadastrosResult.rows[0]?.total) || 0;
+
+        // Últimos 5 pacientes
+        const ultimosPacientesResult = await pool.query(`
+            SELECT id, nome, email
+            FROM pacientes
+            ORDER BY data_cadastro DESC
+            LIMIT 5
+        `);
+        const ultimosPacientes = ultimosPacientesResult.rows;
+
+        // Últimas 5 consultas
+        const ultimasConsultasResult = await pool.query(`
+            SELECT c.id, p.nome AS pacienteNome, m.nome AS medicoNome, c.data
+            FROM consultas c
+            JOIN pacientes p ON c.paciente_id = p.id
+            JOIN medicos m ON c.medico_id = m.id
+            ORDER BY c.data DESC
+            LIMIT 5
+        `);
+        const ultimasConsultas = ultimasConsultasResult.rows;
+
+        // Monta a resposta compatível com o Principal.jsx
+        res.json({
+            consultasHoje,
+            pacientesAtivos,
+            novosCadastros,
+            ultimosPacientes,
+            ultimasConsultas
+        });
+
+    } catch (err) {
+        console.error("Erro ao obter estatísticas:", err);
+        res.status(500).json({ erro: "Erro ao obter estatísticas." });
+    }
+};

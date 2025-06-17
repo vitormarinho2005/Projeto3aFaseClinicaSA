@@ -1,20 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const consultasController = require("../controllers/consultasController");
+const authMiddleware = require("../middlewares/authMiddleware");
 
-// GET /api/consultas
-router.get("/", consultasController.listarConsultas);
+// Rota atual para listar consultas
+router.get("/", authMiddleware, consultasController.listarConsultas);
 
-// GET /api/consultas/:id
-router.get("/:id", consultasController.buscarConsulta);
-
-// POST /api/consultas
-router.post("/", consultasController.criarConsulta);
-
-// PUT /api/consultas/:id
-router.put("/:id", consultasController.atualizarConsulta);
-
-// DELETE /api/consultas/:id
-router.delete("/:id", consultasController.deletarConsulta);
+// NOVA rota para estatísticas
+router.get("/estatisticas", authMiddleware, consultasController.obterEstatisticas);
 
 module.exports = router;

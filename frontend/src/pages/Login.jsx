@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../services/api"; // ajuste o caminho conforme seu projeto
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -7,35 +8,31 @@ export default function Login() {
   const [erro, setErro] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const navigate = useNavigate(); // hook para redirecionar
+  const navigate = useNavigate();
 
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
     setErro("");
-
+  
     try {
-      const res = await fetch("http://localhost:5000/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, senha }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setErro(data.erro || "Erro ao fazer login");
+      const res = await api.post('/auth/login', { email, senha });
+    
+      if (res.data.token) {
+        localStorage.setItem('token', res.data.token);
+        console.log('Token salvo no localStorage:', res.data.token);
+        navigate("/dashboard"); // <-- aqui redireciona após login
+      }    
+    } catch (error) {
+      if (error.response && error.response.data) {
+        setErro(error.response.data.erro || "Erro ao fazer login");
       } else {
-        localStorage.setItem("token", data.token);
-        alert("Login realizado com sucesso!");
-        navigate("/principal"); // redireciona para a página principal
+        setErro("Erro na conexão com o servidor.");
       }
-    } catch (err) {
-      setErro("Erro na conexão com o servidor.");
     } finally {
       setLoading(false);
     }
-  }
+  }  
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
