@@ -8,8 +8,6 @@ async function registrar(req, res) {
   const { nome, email, senha } = req.body;
 
   try {
-    const senhaHash = await bcrypt.hash(senha, 10);
-
     // 1️⃣ Verificar se o email já está cadastrado
     const resultadoEmail = await db.query(
       "SELECT id FROM consultorio.usuarios WHERE email = $1",
@@ -20,7 +18,7 @@ async function registrar(req, res) {
       return res.status(400).json({ erro: "Email já cadastrado" });
     }
 
-    // 2️⃣ Gerar hash da senha
+    // 2️⃣ Gerar hash da senha (uma única vez)
     const senhaHash = await bcrypt.hash(senha, 10);
 
     // 3️⃣ Inserir novo usuário
@@ -37,11 +35,9 @@ async function registrar(req, res) {
 }
 
 async function login(req, res) {
-  const { email, senha } = r<<<<<<< HEAD
-=======D
-=======
+  const { email, senha } = req.body;
+
   console.log("Tentativa de login:", email);
->>>>>>> 309f41a (Quarto commit)
 
   try {
     const resultado = await db.query(
@@ -57,9 +53,15 @@ async function login(req, res) {
     const usuario = resultado.rows[0];
     const senhaCorreta = await bcrypt.compare(senha, usuario.senha);
 
-   const token = jwt.sign({ id: usuario.id, email: usuario.email }, JWT_SECRET, {
-      expiresIn: "4h",
-    });
+    if (!senhaCorreta) {
+      return res.status(401).json({ erro: "Senha incorreta" });
+    }
+
+    const token = jwt.sign(
+      { id: usuario.id, email: usuario.email },
+      JWT_SECRET,
+      { expiresIn: "4h" }
+    );
 
     res.json({ token });
   } catch (err) {
