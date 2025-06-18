@@ -8,10 +8,8 @@ async function registrar(req, res) {
   const { nome, email, senha } = req.body;
 
   try {
-<<<<<<< HEAD
     const senhaHash = await bcrypt.hash(senha, 10);
 
-=======
     // 1️⃣ Verificar se o email já está cadastrado
     const resultadoEmail = await db.query(
       "SELECT id FROM consultorio.usuarios WHERE email = $1",
@@ -26,8 +24,6 @@ async function registrar(req, res) {
     const senhaHash = await bcrypt.hash(senha, 10);
 
     // 3️⃣ Inserir novo usuário
->>>>>>> 309f41a (Quarto commit)
- commit)
     const resultado = await db.query(
       "INSERT INTO consultorio.usuarios (nome, email, senha) VALUES ($1, $2, $3) RETURNING id, nome, email",
       [nome, email, senhaHash]
@@ -52,10 +48,7 @@ async function login(req, res) {
       "SELECT * FROM consultorio.usuarios WHERE email = $1",
       [email]
     );
-<<<<<<< HEAD
-=======
     console.log("Usuário encontrado:", resultado.rows.length);
->>>>>>> 309f41a (Quarto commit)
 
     if (resultado.rows.length === 0) {
       return res.status(401).json({ erro: "Usuário não encontrado" });
@@ -63,10 +56,7 @@ async function login(req, res) {
 
     const usuario = resultado.rows[0];
     const senhaCorreta = await bcrypt.compare(senha, usuario.senha);
-<<<<<<< HEAD
 
-=======
->>>>>>> 309f41a (Quarto commit)
    const token = jwt.sign({ id: usuario.id, email: usuario.email }, JWT_SECRET, {
       expiresIn: "4h",
     });
