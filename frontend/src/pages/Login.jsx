@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../services/api"; // ajuste o caminho conforme seu projeto
+import api from "../services/api";
+import { AuthContext } from "../contexts/AuthContext";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -8,21 +9,24 @@ export default function Login() {
   const [erro, setErro] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
     setErro("");
-  
+
     try {
-      const res = await api.post('/auth/login', { email, senha });
-    
+      const res = await api.post("/auth/login", { email, senha });
+
       if (res.data.token) {
-        localStorage.setItem('token', res.data.token);
-        console.log('Token salvo no localStorage:', res.data.token);
-        navigate("/dashboard"); // <-- aqui redireciona após login
-      }    
+        // Use o login do AuthContext
+        login(res.data.token, res.data.usuario || { email });
+
+        console.log("Token salvo no localStorage:", res.data.token);
+        navigate("/dashboard");
+      }
     } catch (error) {
       if (error.response && error.response.data) {
         setErro(error.response.data.erro || "Erro ao fazer login");
@@ -32,7 +36,7 @@ export default function Login() {
     } finally {
       setLoading(false);
     }
-  }  
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">

@@ -8,7 +8,7 @@ const dashboardRoutes = require('./routes/dashboardRoutes');
 const arquivosRoutes = require("./routes/arquivosRoutes");
 const medicosRoutes = require("./routes/medicosRoutes");
 const pacientesRoutes = require("./routes/pacientesRoutes");
-const consultasRoutes = require('./routes/consultasRoutes');
+const consultasRoutes = require("./routes/consultasRoutes");
 
 const app = express();
 app.use(cors());

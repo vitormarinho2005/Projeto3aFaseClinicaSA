@@ -4,16 +4,20 @@ const db = require("../models/db");
 async function listarPacientes(req, res) {
   try {
     const resultado = await db.query("SELECT * FROM consultorio.pacientes ORDER BY id ASC");
-    res.json(resultado.rows);
+    return res.json(resultado.rows);
   } catch (err) {
     console.error("Erro ao listar pacientes:", err);
-    res.status(500).json({ erro: "Erro ao listar pacientes" });
+    return res.status(500).json({ erro: "Erro interno ao listar pacientes" });
   }
 }
 
 // Buscar paciente por ID
 async function buscarPaciente(req, res) {
   const { id } = req.params;
+
+  if (!id) {
+    return res.status(400).json({ erro: "ID do paciente é obrigatório" });
+  }
 
   try {
     const resultado = await db.query("SELECT * FROM consultorio.pacientes WHERE id = $1", [id]);
@@ -22,10 +26,10 @@ async function buscarPaciente(req, res) {
       return res.status(404).json({ erro: "Paciente não encontrado" });
     }
 
-    res.json(resultado.rows[0]);
+    return res.json(resultado.rows[0]);
   } catch (err) {
     console.error("Erro ao buscar paciente:", err);
-    res.status(500).json({ erro: "Erro ao buscar paciente" });
+    return res.status(500).json({ erro: "Erro interno ao buscar paciente" });
   }
 }
 
@@ -33,16 +37,22 @@ async function buscarPaciente(req, res) {
 async function criarPaciente(req, res) {
   const { nome, idade, email, telefone } = req.body;
 
+  // Validação básica dos campos obrigatórios
+  if (!nome || !email) {
+    return res.status(400).json({ erro: "Nome e email são obrigatórios" });
+  }
+
   try {
     const resultado = await db.query(
-      "INSERT INTO consultorio.pacientes (nome, idade, email, telefone) VALUES ($1, $2, $3, $4) RETURNING *",
-      [nome, idade, email, telefone]
+      `INSERT INTO consultorio.pacientes (nome, idade, email, telefone) 
+       VALUES ($1, $2, $3, $4) RETURNING *`,
+      [nome, idade || null, email, telefone || null]
     );
 
-    res.status(201).json(resultado.rows[0]);
+    return res.status(201).json(resultado.rows[0]);
   } catch (err) {
     console.error("Erro ao criar paciente:", err);
-    res.status(500).json({ erro: "Erro ao criar paciente" });
+    return res.status(500).json({ erro: "Erro interno ao criar paciente" });
   }
 }
 
@@ -51,26 +61,39 @@ async function atualizarPaciente(req, res) {
   const { id } = req.params;
   const { nome, idade, email, telefone } = req.body;
 
+  if (!id) {
+    return res.status(400).json({ erro: "ID do paciente é obrigatório" });
+  }
+  if (!nome || !email) {
+    return res.status(400).json({ erro: "Nome e email são obrigatórios para atualização" });
+  }
+
   try {
     const resultado = await db.query(
-      "UPDATE consultorio.pacientes SET nome = $1, idade = $2, email = $3, telefone = $4 WHERE id = $5 RETURNING *",
-      [nome, idade, email, telefone, id]
+      `UPDATE consultorio.pacientes 
+       SET nome = $1, idade = $2, email = $3, telefone = $4 
+       WHERE id = $5 RETURNING *`,
+      [nome, idade || null, email, telefone || null, id]
     );
 
     if (resultado.rows.length === 0) {
       return res.status(404).json({ erro: "Paciente não encontrado para atualização" });
     }
 
-    res.json(resultado.rows[0]);
+    return res.json(resultado.rows[0]);
   } catch (err) {
     console.error("Erro ao atualizar paciente:", err);
-    res.status(500).json({ erro: "Erro ao atualizar paciente" });
+    return res.status(500).json({ erro: "Erro interno ao atualizar paciente" });
   }
 }
 
 // Deletar paciente
 async function deletarPaciente(req, res) {
   const { id } = req.params;
+
+  if (!id) {
+    return res.status(400).json({ erro: "ID do paciente é obrigatório" });
+  }
 
   try {
     const resultado = await db.query(
@@ -82,10 +105,10 @@ async function deletarPaciente(req, res) {
       return res.status(404).json({ erro: "Paciente não encontrado para exclusão" });
     }
 
-    res.json({ mensagem: "Paciente excluído com sucesso", paciente: resultado.rows[0] });
+    return res.json({ mensagem: "Paciente excluído com sucesso", paciente: resultado.rows[0] });
   } catch (err) {
     console.error("Erro ao deletar paciente:", err);
-    res.status(500).json({ erro: "Erro ao deletar paciente" });
+    return res.status(500).json({ erro: "Erro interno ao deletar paciente" });
   }
 }
 

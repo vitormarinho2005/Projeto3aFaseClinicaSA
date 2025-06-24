@@ -5,7 +5,7 @@ exports.createMedico = async (req, res) => {
   const { usuario_id, especialidade, crm } = req.body;
   try {
     const result = await pool.query(
-      'INSERT INTO medicos (usuario_id, especialidade, crm) VALUES ($1, $2, $3) RETURNING *',
+      'INSERT INTO consultorio.medicos (usuario_id, especialidade, crm) VALUES ($1, $2, $3) RETURNING *',
       [usuario_id, especialidade, crm]
     );
     res.status(201).json(result.rows[0]);
@@ -33,7 +33,7 @@ exports.createPaciente = async (req, res) => {
   const { usuario_id, data_nascimento } = req.body;
   try {
     const result = await pool.query(
-      'INSERT INTO pacientes (usuario_id, data_nascimento) VALUES ($1, $2) RETURNING *',
+      'INSERT INTO consultorio.pacientes (usuario_id, data_nascimento) VALUES ($1, $2) RETURNING *',
       [usuario_id, data_nascimento]
     );
     res.status(201).json(result.rows[0]);
@@ -65,7 +65,7 @@ exports.createUsuario = async (req, res) => {
     const hashedSenha = await bcrypt.hash(senha, saltRounds);
     
     const result = await pool.query(
-      'INSERT INTO usuarios (nome, email, senha) VALUES ($1, $2, $3) RETURNING *',
+      'INSERT INTO consultorio.usuarios (nome, email, senha) VALUES ($1, $2, $3) RETURNING *',
       [nome, email, senha] // depois pode implementar hash na senha
     );
     res.status(201).json(result.rows[0]);

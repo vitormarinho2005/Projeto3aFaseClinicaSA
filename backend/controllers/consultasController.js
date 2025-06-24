@@ -51,16 +51,18 @@ async function buscarConsulta(req, res) {
 
 // Criar nova consulta
 async function criarConsulta(req, res) {
-  const { paciente_id, medico_id, data } = req.body;
+  console.log("Recebido no body:", req.body); // <<< AQUI
+
+  const { pacienteId, data, horario, medicoId } = req.body;
+
   try {
     const resultado = await db.query(
-      `INSERT INTO consultorio.consultas (paciente_id, medico_id, data)
-       VALUES ($1, $2, $3) RETURNING *`,
-      [paciente_id, medico_id, data]
+      "INSERT INTO consultorio.consultas (paciente_id, data, horario, medico_id) VALUES ($1, $2, $3, $4) RETURNING *",
+      [pacienteId, data, horario, medicoId]
     );
     res.status(201).json(resultado.rows[0]);
   } catch (err) {
-    console.error(err);
+    console.error("Erro ao criar consulta:", err);
     res.status(500).json({ erro: "Erro ao criar consulta" });
   }
 }

@@ -1,8 +1,8 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const autenticarToken = require("../middlewares/authMiddleware");
-const { listarArquivos } = require("../controllers/arquivosController");
+const arquivoController = require('../controllers/arquivosController');
 
-router.get("/arquivos", autenticarToken, listarArquivos);
+// GET /api/arquivos
+router.get('/arquivos', arquivoController.listarArquivos);
 
 module.exports = router;

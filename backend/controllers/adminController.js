@@ -2,12 +2,12 @@ const pool = require('../db');
 
 exports.getDashboardData = async (req, res) => {
   try {
-    const totalMedicos = await pool.query('SELECT COUNT(*) FROM medicos');
-    const totalPacientes = await pool.query('SELECT COUNT(*) FROM pacientes');
+    const totalMedicos = await pool.query('SELECT COUNT(*) FROM consultorio.medicos');
+    const totalPacientes = await pool.query('SELECT COUNT(*) FROM consultorio.pacientes');
     
     const consultasPorMes = await pool.query(`
       SELECT TO_CHAR(data_hora, 'YYYY-MM') as mes, COUNT(*) as total
-      FROM consultas
+      FROM consultorio.consultas
       GROUP BY mes
       ORDER BY mes
     `);
