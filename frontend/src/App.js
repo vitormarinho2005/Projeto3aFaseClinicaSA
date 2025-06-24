@@ -5,6 +5,7 @@ import Pacientes from "./pages/Pacientes";
 import Consultas from "./pages/Consultas";
 import Uploads from "./pages/Uploads";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Cadastro from "./pages/Cadastro";
 import Principal from './components/Principal';
 import { AuthProvider } from "./contexts/AuthContext";
 
@@ -14,6 +15,7 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Login />} />
+          <Route path="/cadastro" element={<Cadastro />} />
           <Route path="/principal" element={<Principal />} />
           <Route
             path="/dashboard"

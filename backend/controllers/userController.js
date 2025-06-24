@@ -1,4 +1,5 @@
 const pool = require('../models/db');
+const bcrypt = require('bcrypt'); // se instalou bcrypt
 
 // Criar médico (precisa de usuário já cadastrado)
 exports.createMedico = async (req, res) => {
