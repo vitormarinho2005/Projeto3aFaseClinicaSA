@@ -1,5 +1,7 @@
+//userController
 const pool = require('../models/db');
-const bcrypt = require('bcrypt'); // se instalou bcrypt
+const bcrypt = require('bcrypt')
+
 
 // Criar médico (precisa de usuário já cadastrado)
 exports.createMedico = async (req, res) => {
@@ -15,6 +17,7 @@ exports.createMedico = async (req, res) => {
   }
 };
 
+
 // Listar médicos
 exports.listMedicos = async (req, res) => {
   try {
@@ -28,6 +31,7 @@ exports.listMedicos = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 // Criar paciente (precisa de usuário já cadastrado)
 exports.createPaciente = async (req, res) => {
@@ -43,6 +47,7 @@ exports.createPaciente = async (req, res) => {
   }
 };
 
+
 // Listar pacientes
 exports.listPacientes = async (req, res) => {
   try {
@@ -57,18 +62,23 @@ exports.listPacientes = async (req, res) => {
   }
 };
 
+
 // Criar usuário
 exports.createUsuario = async (req, res) => {
-  const { nome, email, senha } = req.body;
+  console.log('Recebido POST /usuarios:', req.body);
+  const { nome, email, senha, papel } = req.body;
   try {
-    // Criptografar senha
+    // Criptografa a senha
     const saltRounds = 10;
     const hashedSenha = await bcrypt.hash(senha, saltRounds);
-    
+
+
     const result = await pool.query(
-      'INSERT INTO consultorio.usuarios (nome, email, senha) VALUES ($1, $2, $3) RETURNING *',
-      [nome, email, senha] // depois pode implementar hash na senha
+      'INSERT INTO consultorio.usuarios (nome, email, senha, papel) VALUES ($1, $2, $3, $4) RETURNING *',
+      [nome, email, hashedSenha, papel]
     );
+
+
     res.status(201).json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: err.message });

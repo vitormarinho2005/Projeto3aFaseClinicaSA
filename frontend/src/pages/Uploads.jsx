@@ -94,7 +94,7 @@ export default function Uploads() {
             <li key={a.id} className="py-2 border-b">
               <a
                 className="text-blue-600 underline"
-                href={`http://localhost:3000/${a.caminho}`}
+                href={`http://localhost:5000/${a.caminho}`}
                 target="_blank"
                 rel="noreferrer"
               >

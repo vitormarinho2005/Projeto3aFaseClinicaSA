@@ -1,36 +1,42 @@
+// authRoutes.js ou similar
 const express = require('express');
-const bcrypt = require('bcrypt'); // importe no topo para evitar múltiplas require
-const pool = require('../db'); // importe a conexão configurada
+const bcrypt = require('bcrypt');
+const pool = require('../models/db'); // sua conexão com o banco
+const jwt = require('jsonwebtoken');
 
 const router = express.Router();
 
-router.post('/usuarios', async (req, res) => {
+router.post('/login', async (req, res) => {
   try {
-    const { nome, email, senha, papel } = req.body;
+    const { email, senha } = req.body;
 
-    if (!nome || !email || !senha || !papel) {
-      return res.status(400).json({ error: 'Dados incompletos' });
+    if (!email || !senha) {
+      return res.status(400).json({ error: 'Email e senha são obrigatórios' });
     }
 
-    // Verifica se o email já existe
-    const { rowCount } = await pool.query('SELECT 1 FROM usuarios WHERE email = $1', [email]);
-    if (rowCount > 0) {
-      return res.status(409).json({ error: 'Email já cadastrado' });
+    // Buscar usuário pelo email
+    const { rows } = await pool.query('SELECT * FROM usuarios WHERE email = $1', [email]);
+    if (rows.length === 0) {
+      return res.status(401).json({ error: 'Usuário não encontrado' });
     }
 
-    // Faz hash da senha
-    const senhaHash = await bcrypt.hash(senha, 10);
+    const usuario = rows[0];
 
-    // Insere o usuário no banco
-    await pool.query(
-      'INSERT INTO usuarios (nome, email, senha, papel) VALUES ($1, $2, $3, $4)',
-      [nome, email, senhaHash, papel]
-    );
+    // Verificar senha
+    const senhaValida = await bcrypt.compare(senha, usuario.senha);
+    if (!senhaValida) {
+      return res.status(401).json({ error: 'Senha incorreta' });
+    }
 
-    res.status(201).json({ message: 'Usuário criado com sucesso' });
+    // Gerar token JWT (exemplo)
+    const token = jwt.sign({ id: usuario.id, email: usuario.email, papel: usuario.papel }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+    // Retornar dados para o frontend
+    return res.json({ token, usuario: { id: usuario.id, nome: usuario.nome, email: usuario.email, papel: usuario.papel } });
+
   } catch (error) {
-    console.error('Erro ao cadastrar usuário:', error);
-    res.status(500).json({ error: 'Erro interno no servidor' });
+    console.error('Erro no login:', error);
+    return res.status(500).json({ error: 'Erro interno no servidor' });
   }
 });
 

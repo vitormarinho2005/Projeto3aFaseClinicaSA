@@ -10,19 +10,34 @@ export function AuthProvider({ children }) {
     const savedToken = localStorage.getItem("token");
     const savedUser = localStorage.getItem("usuario");
 
-    if (savedToken) {
+    if (savedToken && savedToken !== "undefined") {
       setToken(savedToken);
     }
-    if (savedUser) {
-      setUsuario(JSON.parse(savedUser));
+
+    if (savedUser && savedUser !== "undefined") {
+      try {
+        const parsedUser = JSON.parse(savedUser);
+        if (parsedUser && typeof parsedUser === "object") {
+          setUsuario(parsedUser);
+        } else {
+          throw new Error("Usuário salvo inválido");
+        }
+      } catch (err) {
+        console.error("Erro ao fazer parse do usuário salvo:", err);
+        localStorage.removeItem("usuario");
+      }
     }
   }, []);
 
   function login(token, usuario) {
-    localStorage.setItem("token", token);
-    localStorage.setItem("usuario", JSON.stringify(usuario));
-    setToken(token);
-    setUsuario(usuario);
+    try {
+      localStorage.setItem("token", token);
+      localStorage.setItem("usuario", JSON.stringify(usuario));
+      setToken(token);
+      setUsuario(usuario);
+    } catch (error) {
+      console.error("Erro ao salvar dados de login:", error);
+    }
   }
 
   function logout() {
@@ -32,12 +47,10 @@ export function AuthProvider({ children }) {
     setUsuario(null);
   }
 
-  const isAuthenticated = !!token;
+  const isAuthenticated = Boolean(token);
 
   return (
-    <AuthContext.Provider
-      value={{ token, usuario, isAuthenticated, login, logout }}
-    >
+    <AuthContext.Provider value={{ token, usuario, isAuthenticated, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
