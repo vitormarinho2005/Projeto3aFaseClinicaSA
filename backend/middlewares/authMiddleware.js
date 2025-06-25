@@ -1,20 +1,29 @@
-const jwt = require('jsonwebtoken');
+const express = require('express');
+const router = express.Router();
 
-module.exports = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  
-  if (!authHeader) {
-    return res.status(401).json({ mensagem: 'Token não fornecido' });
-  }
+const autenticarToken = require('../middlewares/authMiddleware');
+const verificarPapeis = require('../middlewares/verificarPapeis');
 
-  const token = authHeader.split(' ')[1];
+const {
+  consultasPorMedicoMes,
+  consultasPorMedicoPeriodo,
+  consultasPorDiaSemana,
+  consultasPorDiaSemanaPeriodo,
+  obterEstatisticas
+} = require('../controllers/dashboardController');
 
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // pode usar o payload do token se quiser
-    next();
-  } catch (err) {
-    console.error('Erro no token:', err);
-    return res.status(403).json({ mensagem: 'Token inválido ou expirado' });
-  }
-};
+// Apenas admin pode acessar estatísticas gerais
+router.get('/', autenticarToken, verificarPapeis('admin'), obterEstatisticas);
+
+// Médicos e admin podem acessar consultas por médico no mês
+router.get('/consultas-medicos-mes', autenticarToken, verificarPapeis('medico', 'admin'), consultasPorMedicoMes);
+
+// Médicos e admin podem acessar consultas por médico em período
+router.get('/consultas-medicos-periodo', autenticarToken, verificarPapeis('medico', 'admin'), consultasPorMedicoPeriodo);
+
+// Médicos, admin e pacientes podem ver consultas por dia da semana
+router.get('/consultas-dia-semana', autenticarToken, verificarPapeis('medico', 'admin', 'paciente'), consultasPorDiaSemana);
+
+router.get('/consultas-dia-semana-periodo', autenticarToken, verificarPapeis('medico', 'admin', 'paciente'), consultasPorDiaSemanaPeriodo);
+
+module.exports = router;

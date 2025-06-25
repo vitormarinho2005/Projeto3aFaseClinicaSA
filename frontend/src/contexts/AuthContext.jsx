@@ -10,11 +10,13 @@ export function AuthProvider({ children }) {
     const savedToken = localStorage.getItem("token");
     const savedUser = localStorage.getItem("usuario");
 
-    if (savedToken && savedToken !== "undefined") {
+    // Verifica se savedToken existe, é string e diferente de "undefined" literal
+    if (typeof savedToken === "string" && savedToken !== "undefined") {
       setToken(savedToken);
     }
 
-    if (savedUser && savedUser !== "undefined") {
+    // Verifica se savedUser existe e é string antes do parse
+    if (typeof savedUser === "string" && savedUser !== "undefined") {
       try {
         const parsedUser = JSON.parse(savedUser);
         if (parsedUser && typeof parsedUser === "object") {

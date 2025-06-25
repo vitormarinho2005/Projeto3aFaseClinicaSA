@@ -7,6 +7,9 @@ export default function Navbar() {
       <Link to="/pacientes" className="hover:underline">Pacientes</Link>
       <Link to="/consultas" className="hover:underline">Consultas</Link>
       <Link to="/uploads" className="hover:underline">Uploads</Link>
+      <Link to="/perfil/usuario" className="hover:underline">Perfil do Usuário</Link>
+      <Link to="/perfil/admin" className="hover:underline">Perfil do Admin</Link>
+      <Link to="/perfil/paciente" className="hover:underline">Perfil do Paciente</Link>
       <Link to="/" className="ml-auto hover:underline">Sair</Link>
     </nav>
   );
