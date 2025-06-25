@@ -1,29 +1,39 @@
-const express = require('express');
-const router = express.Router();
+// authMiddleware.js
+const jwt = require('jsonwebtoken');
 
-const autenticarToken = require('../middlewares/authMiddleware');
-const verificarPapeis = require('../middlewares/verificarPapeis');
+function autenticarToken(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
 
-const {
-  consultasPorMedicoMes,
-  consultasPorMedicoPeriodo,
-  consultasPorDiaSemana,
-  consultasPorDiaSemanaPeriodo,
-  obterEstatisticas
-} = require('../controllers/dashboardController');
+  if (!token) {
+    console.log("Token não fornecido");
+    return res.status(401).json({ erro: 'Token não fornecido' });
+  }
 
-// Apenas admin pode acessar estatísticas gerais
-router.get('/', autenticarToken, verificarPapeis('admin'), obterEstatisticas);
+  jwt.verify(token, process.env.JWT_SECRET, (err, usuario) => {
+    if (err) {
+      console.log("Token inválido ou expirado:", err.message);
+      return res.status(403).json({ erro: 'Token inválido' });
+    }
+    req.usuario = usuario;
+    console.log("Usuário autenticado:", usuario);
+    next();
+  });
+}
 
-// Médicos e admin podem acessar consultas por médico no mês
-router.get('/consultas-medicos-mes', autenticarToken, verificarPapeis('medico', 'admin'), consultasPorMedicoMes);
+function verificarPapeis(...papeisPermitidos) {
+  return (req, res, next) => {
+    const usuario = req.usuario;
+    if (!usuario) {
+      console.log("Usuário não autenticado");
+      return res.status(403).json({ erro: "Acesso não autorizado" });
+    }
+    if (!papeisPermitidos.includes(usuario.papel)) {
+      console.log("Papel do usuário não permitido:", usuario.papel);
+      return res.status(403).json({ erro: "Acesso não autorizado" });
+    }
+    next();
+  };
+}
 
-// Médicos e admin podem acessar consultas por médico em período
-router.get('/consultas-medicos-periodo', autenticarToken, verificarPapeis('medico', 'admin'), consultasPorMedicoPeriodo);
-
-// Médicos, admin e pacientes podem ver consultas por dia da semana
-router.get('/consultas-dia-semana', autenticarToken, verificarPapeis('medico', 'admin', 'paciente'), consultasPorDiaSemana);
-
-router.get('/consultas-dia-semana-periodo', autenticarToken, verificarPapeis('medico', 'admin', 'paciente'), consultasPorDiaSemanaPeriodo);
-
-module.exports = router;
+module.exports = autenticarToken;

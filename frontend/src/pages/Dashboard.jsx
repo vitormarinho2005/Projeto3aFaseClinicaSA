@@ -121,30 +121,38 @@ export default function Dashboard() {
         {/* Últimas consultas */}
         <div className="bg-white p-4 rounded shadow mb-8">
           <h3 className="text-lg font-semibold mb-4">Últimas Consultas</h3>
-          <ul className="divide-y">
-            {estatisticas.ultimasConsultas?.map((consulta) => (
-              <li key={consulta.id} className="py-2">
-                <p className="font-semibold">{consulta.pacienteNome}</p>
-                <p>
-                  Médico: {consulta.medicoNome} -{" "}
-                  {new Date(consulta.data).toLocaleDateString()}
-                </p>
-              </li>
-            )) || <p>Sem dados disponíveis.</p>}
-          </ul>
+          {estatisticas.ultimasConsultas?.length > 0 ? (
+            <ul className="divide-y">
+              {estatisticas.ultimasConsultas.map((consulta) => (
+                <li key={consulta.id} className="py-2">
+                  <p className="font-semibold">{consulta.pacienteNome}</p>
+                  <p>
+                    Médico: {consulta.medicoNome} -{" "}
+                    {new Date(consulta.data).toLocaleDateString()}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>Sem dados disponíveis.</p>
+          )}
         </div>
 
         {/* Últimos pacientes */}
         <div className="bg-white p-4 rounded shadow">
           <h3 className="text-lg font-semibold mb-4">Últimos Pacientes</h3>
-          <ul className="divide-y">
-            {estatisticas.ultimosPacientes?.map((paciente) => (
-              <li key={paciente.id} className="py-2">
-                <p className="font-semibold">{paciente.nome}</p>
-                <p>Email: {paciente.email}</p>
-              </li>
-            )) || <p>Sem dados disponíveis.</p>}
-          </ul>
+          {estatisticas.ultimosPacientes?.length > 0 ? (
+            <ul className="divide-y">
+              {estatisticas.ultimosPacientes.map((paciente) => (
+                <li key={paciente.id} className="py-2">
+                  <p className="font-semibold">{paciente.nome}</p>
+                  <p>Email: {paciente.email}</p>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>Sem dados disponíveis.</p>
+          )}
         </div>
       </div>
     </>
