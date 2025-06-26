@@ -18,11 +18,11 @@ app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 
-// Rotas importadas
+// Rotas API
 app.use("/api/auth", authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/dashboard', dashboardRoutes);
-app.use("/api", arquivosRoutes);
+app.use("/api/arquivos", arquivosRoutes);
 app.use('/api/medicos', medicosRoutes);
 app.use("/api/pacientes", pacientesRoutes);
 app.use('/api/consultas', consultasRoutes);

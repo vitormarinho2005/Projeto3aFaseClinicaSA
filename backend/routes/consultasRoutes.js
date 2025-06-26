@@ -1,15 +1,25 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const consultasController = require("../controllers/consultasController");
-const authMiddleware = require("../middlewares/authMiddleware");
 
-// Rota para criar consulta
-router.post("/", consultasController.criarConsulta);
+const { verificarToken, verificarPapeis } = require('../middlewares/authMiddleware');
+const dashboardController = require('../controllers/dashboardController');
 
-// Rota para listar consultas
-router.get("/", authMiddleware, consultasController.listarConsultas);
+// Função helper para proteger rotas
+function rotaProtegida(papeis, handler) {
+  if (typeof handler !== 'function') {
+    throw new TypeError('Handler deve ser uma função');
+  }
+  return [verificarToken, verificarPapeis(...papeis), handler];
+}
 
-// Rota para estatísticas
-router.get("/estatisticas", authMiddleware, consultasController.obterEstatisticas);
+// Rotas protegidas
+router.get('/', ...rotaProtegida(['admin'], dashboardController.obterEstatisticas));
+router.get('/consultas-medicos-mes', ...rotaProtegida(['admin', 'medico'], dashboardController.consultasPorMedicoMes));
+router.get('/consultas-medicos-periodo', ...rotaProtegida(['admin', 'medico'], dashboardController.consultasPorMedicoPeriodo));
+router.get('/consultas-dia-semana', ...rotaProtegida(['admin', 'medico', 'paciente'], dashboardController.consultasPorDiaSemana));
+router.get('/consultas-dia-semana-periodo', ...rotaProtegida(['admin', 'medico', 'paciente'], dashboardController.consultasPorDiaSemanaPeriodo));
+router.get('/agendamentos-especialidade-mes', ...rotaProtegida(['admin', 'medico'], dashboardController.agendamentosPorEspecialidadeMes));
+router.get('/agendamentos-dia-mes', ...rotaProtegida(['admin', 'medico'], dashboardController.agendamentosPorDiaMes));
+router.get('/estatisticas-gerais', verificarToken, verificarPapeis('admin'), dashboardController.estatisticasGerais);
 
 module.exports = router;

@@ -11,7 +11,6 @@ exports.consultasPorMedicoMes = async (req, res) => {
       GROUP BY m.nome
       ORDER BY total DESC
     `);
-
     res.json(result.rows);
   } catch (err) {
     console.error("Erro consultasPorMedicoMes:", err);
@@ -19,7 +18,7 @@ exports.consultasPorMedicoMes = async (req, res) => {
   }
 };
 
-// Consultas por dia da semana (no mês atual)
+// Consultas por dia da semana (mês atual)
 exports.consultasPorDiaSemana = async (req, res) => {
   try {
     const result = await pool.query(`
@@ -41,10 +40,9 @@ exports.consultasPorDiaSemana = async (req, res) => {
           ELSE 8
         END
     `);
-
     res.json(result.rows);
   } catch (err) {
-    console.error("Erro em consultasPorDiaSemana:", err);
+    console.error("Erro consultasPorDiaSemana:", err);
     res.status(500).json({ erro: "Erro ao obter consultas por dia da semana." });
   }
 };
@@ -52,7 +50,13 @@ exports.consultasPorDiaSemana = async (req, res) => {
 // Estatísticas gerais
 exports.obterEstatisticas = async (req, res) => {
   try {
-    const [consultasHoje, pacientesAtivos, novosCadastros, ultimosPacientes, ultimasConsultas] = await Promise.all([
+    const [
+      consultasHoje,
+      pacientesAtivos,
+      novosCadastros,
+      ultimosPacientes,
+      ultimasConsultas
+    ] = await Promise.all([
       pool.query(`SELECT COUNT(*) AS total FROM consultorio.consultas WHERE DATE(data) = CURRENT_DATE`),
       pool.query(`SELECT COUNT(*) AS total FROM consultorio.pacientes WHERE status = 'ativo'`),
       pool.query(`SELECT COUNT(*) AS total FROM consultorio.pacientes WHERE DATE_TRUNC('month', data_cadastro) = DATE_TRUNC('month', CURRENT_DATE)`),
@@ -68,11 +72,11 @@ exports.obterEstatisticas = async (req, res) => {
     ]);
 
     res.json({
-      consultasHoje: parseInt(consultasHoje.rows[0].total) || 0,
-      pacientesAtivos: parseInt(pacientesAtivos.rows[0].total) || 0,
-      novosCadastros: parseInt(novosCadastros.rows[0].total) || 0,
+      consultasHoje: parseInt(consultasHoje.rows[0].total, 10) || 0,
+      pacientesAtivos: parseInt(pacientesAtivos.rows[0].total, 10) || 0,
+      novosCadastros: parseInt(novosCadastros.rows[0].total, 10) || 0,
       ultimosPacientes: ultimosPacientes.rows,
-      ultimasConsultas: ultimasConsultas.rows
+      ultimasConsultas: ultimasConsultas.rows,
     });
   } catch (err) {
     console.error("Erro ao obter estatísticas:", err);
@@ -138,5 +142,52 @@ exports.consultasPorDiaSemanaPeriodo = async (req, res) => {
   } catch (err) {
     console.error("Erro consultasPorDiaSemanaPeriodo:", err);
     res.status(500).json({ erro: "Erro ao obter consultas por dia da semana no período." });
+  }
+};
+
+// Agendamentos por especialidade no mês atual
+exports.agendamentosPorEspecialidadeMes = async (req, res) => {
+  try {
+    const sql = `
+      SELECT e.nome AS especialidade, COUNT(c.id) AS total
+      FROM consultorio.consultas c
+      JOIN consultorio.especialidades e ON c.id_especialidade = e.id
+      WHERE DATE_TRUNC('month', c.data) = DATE_TRUNC('month', CURRENT_DATE)
+      GROUP BY e.nome
+      ORDER BY total DESC
+    `;
+    const result = await pool.query(sql);
+    return res.json(result.rows);
+  } catch (err) {
+    console.error("Erro agendamentosPorEspecialidadeMes:", err);
+    return res.status(500).json({ erro: "Erro ao obter agendamentos por especialidade no mês." });
+  }
+};
+
+
+// Agendamentos por dia no mês atual
+exports.agendamentosPorDiaMes = async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT DATE(c.data) AS dia, COUNT(c.id) AS total
+      FROM consultorio.consultas c
+      WHERE DATE_TRUNC('month', c.data) = DATE_TRUNC('month', CURRENT_DATE)
+      GROUP BY DATE(c.data)
+      ORDER BY dia
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Erro agendamentosPorDiaMes:", err);
+    res.status(500).json({ erro: "Erro ao obter agendamentos por dia no mês." });
+  }
+};
+
+exports.estatisticasGerais = async (req, res) => {
+  try {
+    // Reaproveitando a função existente
+    await exports.obterEstatisticas(req, res);
+  } catch (err) {
+    console.error("Erro estatisticasGerais:", err);
+    res.status(500).json({ erro: "Erro ao obter estatísticas gerais." });
   }
 };

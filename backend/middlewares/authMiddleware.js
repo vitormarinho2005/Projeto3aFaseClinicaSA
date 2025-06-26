@@ -1,39 +1,25 @@
-// authMiddleware.js
 const jwt = require('jsonwebtoken');
 
-function autenticarToken(req, res, next) {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-
-  if (!token) {
-    console.log("Token não fornecido");
-    return res.status(401).json({ erro: 'Token não fornecido' });
-  }
-
-  jwt.verify(token, process.env.JWT_SECRET, (err, usuario) => {
-    if (err) {
-      console.log("Token inválido ou expirado:", err.message);
-      return res.status(403).json({ erro: 'Token inválido' });
-    }
+function verificarToken(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return res.status(401).json({ erro: "Token não fornecido" });
+  const token = authHeader.split(' ')[1];
+  try {
+    const usuario = jwt.verify(token, process.env.JWT_SECRET);
     req.usuario = usuario;
-    console.log("Usuário autenticado:", usuario);
     next();
-  });
+  } catch {
+    return res.status(401).json({ erro: "Token inválido ou expirado" });
+  }
 }
 
 function verificarPapeis(...papeisPermitidos) {
   return (req, res, next) => {
-    const usuario = req.usuario;
-    if (!usuario) {
-      console.log("Usuário não autenticado");
-      return res.status(403).json({ erro: "Acesso não autorizado" });
-    }
-    if (!papeisPermitidos.includes(usuario.papel)) {
-      console.log("Papel do usuário não permitido:", usuario.papel);
-      return res.status(403).json({ erro: "Acesso não autorizado" });
+    if (!req.usuario || !papeisPermitidos.includes(req.usuario.papel)) {
+      return res.status(403).json({ erro: "Acesso negado: papel insuficiente" });
     }
     next();
   };
 }
 
-module.exports = autenticarToken;
+module.exports = { verificarToken, verificarPapeis };

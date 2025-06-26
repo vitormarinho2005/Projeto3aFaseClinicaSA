@@ -1,28 +1,65 @@
-// backend/routes/dashboardRoutes.js
-
 const express = require('express');
 const router = express.Router();
 
-const autenticarToken = require('../middlewares/authMiddleware');
-const verificarPapeis = require('../middlewares/verificarPapeis');
+const { verificarToken, verificarPapeis } = require('../middlewares/authMiddleware');
+const dashboardController = require('../controllers/dashboardController');
 
-const {
-  consultasPorMedicoMes,
-  consultasPorMedicoPeriodo,
-  consultasPorDiaSemana,
-  consultasPorDiaSemanaPeriodo,
-  obterEstatisticas
-} = require('../controllers/dashboardController');
+// Rotas protegidas com autenticação e verificação de papéis
 
-// Rotas protegidas do dashboard
-router.get('/', autenticarToken, verificarPapeis('admin'), obterEstatisticas);
+router.get(
+  '/',
+  verificarToken,
+  verificarPapeis('admin'),
+  dashboardController.obterEstatisticas
+);
 
-router.get('/consultas-medicos-mes', autenticarToken, verificarPapeis('medico', 'admin'), consultasPorMedicoMes);
+router.get(
+  '/consultas-medicos-mes',
+  verificarToken,
+  verificarPapeis('admin', 'medico'),
+  dashboardController.consultasPorMedicoMes
+);
 
-router.get('/consultas-medicos-periodo', autenticarToken, verificarPapeis('medico', 'admin'), consultasPorMedicoPeriodo);
+router.get(
+  '/consultas-medicos-periodo',
+  verificarToken,
+  verificarPapeis('admin', 'medico'),
+  dashboardController.consultasPorMedicoPeriodo
+);
 
-router.get('/consultas-dia-semana', autenticarToken, verificarPapeis('medico', 'admin', 'paciente'), consultasPorDiaSemana);
+router.get(
+  '/consultas-dia-semana',
+  verificarToken,
+  verificarPapeis('admin', 'medico', 'paciente'),
+  dashboardController.consultasPorDiaSemana
+);
 
-router.get('/consultas-dia-semana-periodo', autenticarToken, verificarPapeis('medico', 'admin', 'paciente'), consultasPorDiaSemanaPeriodo);
+router.get(
+  '/consultas-dia-semana-periodo',
+  verificarToken,
+  verificarPapeis('admin', 'medico', 'paciente'),
+  dashboardController.consultasPorDiaSemanaPeriodo
+);
+
+router.get(
+  '/estatisticas-gerais',
+  verificarToken,
+  verificarPapeis('admin'),
+  dashboardController.estatisticasGerais
+);
+
+router.get(
+  '/agendamentos-especialidade-mes',
+  verificarToken,
+  verificarPapeis('admin', 'medico'),
+  dashboardController.agendamentosPorEspecialidadeMes
+);
+
+router.get(
+  '/agendamentos-dia-mes',
+  verificarToken,
+  verificarPapeis('admin', 'medico'),
+  dashboardController.agendamentosPorDiaMes
+);
 
 module.exports = router;
