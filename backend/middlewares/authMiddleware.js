@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 
+// Verifica o token JWT
 function verificarToken(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader) return res.status(401).json({ erro: "Token não fornecido" });
@@ -13,6 +14,7 @@ function verificarToken(req, res, next) {
   }
 }
 
+// Verifica se o papel do usuário está entre os permitidos
 function verificarPapeis(...papeisPermitidos) {
   return (req, res, next) => {
     if (!req.usuario || !papeisPermitidos.includes(req.usuario.papel)) {
@@ -22,4 +24,19 @@ function verificarPapeis(...papeisPermitidos) {
   };
 }
 
-module.exports = { verificarToken, verificarPapeis };
+// Verifica se o usuário é admin
+function verificarAdmin(req, res, next) {
+  if (!req.usuario || req.usuario.papel !== 'admin') {
+    return res.status(403).json({
+      erro: "Acesso negado. Apenas administradores podem acessar esta rota.",
+    });
+  }
+  next();
+}
+
+// ✅ Exporta tudo em um só lugar
+module.exports = {
+  verificarToken,
+  verificarPapeis,
+  verificarAdmin
+};

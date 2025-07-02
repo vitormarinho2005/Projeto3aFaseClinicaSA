@@ -35,17 +35,18 @@ async function buscarPaciente(req, res) {
 
 // Criar novo paciente
 async function criarPaciente(req, res) {
-  const { nome, email, telefone, cpf } = req.body;
+  const { nome, idade, email, telefone } = req.body;
 
-  if (!nome || !email || !cpf) {
-    return res.status(400).json({ erro: "Nome, email e CPF são obrigatórios" });
+  // Validação básica dos campos obrigatórios
+  if (!nome || !email) {
+    return res.status(400).json({ erro: "Nome e email são obrigatórios" });
   }
 
   try {
     const resultado = await db.query(
-      `INSERT INTO consultorio.pacientes (nome, email, telefone, cpf) 
-   VALUES ($1, $2, $3, $4) RETURNING *`,
-      [nome, email, telefone || null, cpf]
+      `INSERT INTO consultorio.pacientes (nome, idade, email, telefone) 
+       VALUES ($1, $2, $3, $4) RETURNING *`,
+      [nome, idade || null, email, telefone || null]
     );
 
     return res.status(201).json(resultado.rows[0]);
@@ -58,7 +59,7 @@ async function criarPaciente(req, res) {
 // Atualizar paciente existente
 async function atualizarPaciente(req, res) {
   const { id } = req.params;
-  const { nome, email, telefone } = req.body;
+  const { nome, idade, email, telefone } = req.body;
 
   if (!id) {
     return res.status(400).json({ erro: "ID do paciente é obrigatório" });
@@ -70,9 +71,9 @@ async function atualizarPaciente(req, res) {
   try {
     const resultado = await db.query(
       `UPDATE consultorio.pacientes 
-       SET nome = $1, email = $2, telefone = $3 
-       WHERE id = $4 RETURNING *`,
-      [nome, email, telefone || null, id]
+       SET nome = $1, idade = $2, email = $3, telefone = $4 
+       WHERE id = $5 RETURNING *`,
+      [nome, idade || null, email, telefone || null, id]
     );
 
     if (resultado.rows.length === 0) {

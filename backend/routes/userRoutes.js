@@ -1,43 +1,21 @@
-// authRoutes.js ou similar
 const express = require('express');
-const bcrypt = require('bcrypt');
-const pool = require('../models/db'); // sua conexão com o banco
-const jwt = require('jsonwebtoken');
-
 const router = express.Router();
 
-router.post('/login', async (req, res) => {
-  try {
-    const { email, senha } = req.body;
+const userController = require('../controllers/userController'); // Crie este controller com as funções abaixo
 
-    if (!email || !senha) {
-      return res.status(400).json({ error: 'Email e senha são obrigatórios' });
-    }
+// Listar todos os usuários
+router.get('/', userController.listarUsuarios);
 
-    // Buscar usuário pelo email
-    const { rows } = await pool.query('SELECT * FROM usuarios WHERE email = $1', [email]);
-    if (rows.length === 0) {
-      return res.status(401).json({ error: 'Usuário não encontrado' });
-    }
+// Buscar usuário por ID
+router.get('/:id', userController.buscarUsuario);
 
-    const usuario = rows[0];
+// Criar usuário (Cadastro)
+router.post('/', userController.criarUsuario);
 
-    // Verificar senha
-    const senhaValida = await bcrypt.compare(senha, usuario.senha);
-    if (!senhaValida) {
-      return res.status(401).json({ error: 'Senha incorreta' });
-    }
+// Atualizar usuário por ID
+router.put('/:id', userController.atualizarUsuario);
 
-    // Gerar token JWT (exemplo)
-    const token = jwt.sign({ id: usuario.id, email: usuario.email, papel: usuario.papel }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-    // Retornar dados para o frontend
-    return res.json({ token, usuario: { id: usuario.id, nome: usuario.nome, email: usuario.email, papel: usuario.papel } });
-
-  } catch (error) {
-    console.error('Erro no login:', error);
-    return res.status(500).json({ error: 'Erro interno no servidor' });
-  }
-});
+// Deletar usuário por ID
+router.delete('/:id', userController.deletarUsuario);
 
 module.exports = router;
