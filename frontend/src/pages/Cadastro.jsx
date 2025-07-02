@@ -26,7 +26,7 @@ export default function Cadastro() {
       console.log('Enviando dados:', { nome, email, senha, papel });
 
       // Chamada à API para cadastro
-      await api.post('/users/usuarios', {
+      await api.post('/users', {
         nome: nome.trim(),
         email: email.trim(),
         senha,
