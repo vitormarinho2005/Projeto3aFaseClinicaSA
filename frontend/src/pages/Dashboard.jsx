@@ -22,16 +22,16 @@ export default function Dashboard() {
   const { logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  // Requisição: Agendamentos por especialidade/mês
+  // Requisição: Agendamentos por médico no mês
   async function fetchAgendamentosPorEspecialidade() {
-    const res = await api.get("/dashboard/agendamentos-especialidade-mes");
-    const labels = res.data.map((item) => item.especialidade);
-    const data = res.data.map((item) => parseInt(item.total));
+    const res = await api.get("/dashboard/consultas-medicos-mes");
+    const labels = res.data.map((item) => item.nome); // Ajuste para o nome do médico
+    const data = res.data.map((item) => Number(item.total)); // Garantir números
     return {
       labels,
       datasets: [
         {
-          label: "Agendamentos por Especialidade (Mês)",
+          label: "Agendamentos por Médico (Mês)",
           data,
           backgroundColor: "rgba(255, 159, 64, 0.6)",
         },
@@ -39,16 +39,16 @@ export default function Dashboard() {
     };
   }
 
-  // Requisição: Agendamentos por dia do mês
+  // Requisição: Agendamentos por dia da semana
   async function fetchAgendamentosPorDiaMes() {
-    const res = await api.get("/dashboard/agendamentos-dia-mes");
-    const labels = res.data.map((item) => item.dia.toString());
-    const data = res.data.map((item) => parseInt(item.total));
+    const res = await api.get("/dashboard/consultas-dia-semana");
+    const labels = res.data.map((item) => item.dia_semana.trim());
+    const data = res.data.map((item) => Number(item.total_consultas));
     return {
       labels,
       datasets: [
         {
-          label: "Agendamentos por Dia do Mês",
+          label: "Agendamentos por Dia da Semana (Mês)",
           data,
           backgroundColor: "rgba(54, 162, 235, 0.6)",
         },
@@ -56,7 +56,7 @@ export default function Dashboard() {
     };
   }
 
-  // Requisição: Estatísticas gerais
+  // Requisição: Estatísticas gerais (corrigida a URL)
   async function fetchEstatisticas() {
     const res = await api.get("/dashboard/estatisticas-gerais");
     return res.data;
@@ -121,7 +121,7 @@ export default function Dashboard() {
         {/* Gráficos */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <div className="bg-white p-4 rounded shadow">
-            <h3 className="text-lg font-semibold mb-4">Agendamentos por Especialidade (Mês)</h3>
+            <h3 className="text-lg font-semibold mb-4">Agendamentos por Médico (Mês)</h3>
             {agendamentosPorEspecialidade ? (
               <Bar data={agendamentosPorEspecialidade} />
             ) : (
@@ -130,7 +130,7 @@ export default function Dashboard() {
           </div>
 
           <div className="bg-white p-4 rounded shadow">
-            <h3 className="text-lg font-semibold mb-4">Agendamentos por Dia do Mês</h3>
+            <h3 className="text-lg font-semibold mb-4">Agendamentos por Dia da Semana (Mês)</h3>
             {agendamentosPorDiaMes ? (
               <Bar data={agendamentosPorDiaMes} />
             ) : (

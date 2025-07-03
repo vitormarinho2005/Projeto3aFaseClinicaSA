@@ -1,7 +1,9 @@
 const pool = require('../models/db');
 const bcrypt = require('bcrypt');
 
-// Cria usuário genérico
+// ================= USUÁRIOS ================== //
+
+// Criar usuário genérico
 exports.criarUsuario = async (req, res) => {
   const { nome, email, senha, papel } = req.body;
 
@@ -25,7 +27,88 @@ exports.criarUsuario = async (req, res) => {
   }
 };
 
-// Cria médico vinculado a usuário existente
+// Listar todos os usuários
+exports.listarUsuarios = async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT id, nome, email, papel FROM consultorio.usuarios ORDER BY nome`
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Erro ao listar usuários:', err);
+    res.status(500).json({ error: 'Erro interno ao listar usuários' });
+  }
+};
+
+// Buscar usuário por ID
+exports.buscarUsuario = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await pool.query(
+      `SELECT id, nome, email, papel FROM consultorio.usuarios WHERE id = $1`,
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Usuário não encontrado' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Erro ao buscar usuário:', err);
+    res.status(500).json({ error: 'Erro interno ao buscar usuário' });
+  }
+};
+
+// Atualizar usuário por ID
+exports.atualizarUsuario = async (req, res) => {
+  const { id } = req.params;
+  const { nome, email, senha, papel } = req.body;
+
+  try {
+    const hashedSenha = senha ? await bcrypt.hash(senha, 10) : null;
+
+    const result = await pool.query(
+      `UPDATE consultorio.usuarios
+       SET nome = $1, email = $2, senha = COALESCE($3, senha), papel = $4
+       WHERE id = $5 RETURNING id, nome, email, papel`,
+      [nome, email, hashedSenha, papel, id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Usuário não encontrado' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Erro ao atualizar usuário:', err);
+    res.status(500).json({ error: 'Erro interno ao atualizar usuário' });
+  }
+};
+
+// Deletar usuário por ID
+exports.deletarUsuario = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await pool.query(
+      `DELETE FROM consultorio.usuarios WHERE id = $1 RETURNING id`,
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Usuário não encontrado' });
+    }
+
+    res.json({ mensagem: 'Usuário deletado com sucesso' });
+  } catch (err) {
+    console.error('Erro ao deletar usuário:', err);
+    res.status(500).json({ error: 'Erro interno ao deletar usuário' });
+  }
+};
+
+// ================= MÉDICOS ================== //
 exports.criarMedico = async (req, res) => {
   const { usuario_id, especialidade, crm } = req.body;
 
@@ -47,7 +130,6 @@ exports.criarMedico = async (req, res) => {
   }
 };
 
-// Cria médico completo (usuário + médico) dentro de transação
 exports.criarMedicoCompleto = async (req, res) => {
   const { nome, email, senha, especialidade, crm } = req.body;
 
@@ -88,7 +170,6 @@ exports.criarMedicoCompleto = async (req, res) => {
   }
 };
 
-// Lista médicos com dados do usuário vinculado
 exports.listarMedicos = async (req, res) => {
   try {
     const result = await pool.query(`
@@ -104,7 +185,7 @@ exports.listarMedicos = async (req, res) => {
   }
 };
 
-// Cria paciente vinculado a usuário existente
+// ================= PACIENTES ================== //
 exports.criarPaciente = async (req, res) => {
   const { usuario_id, data_nascimento } = req.body;
 
@@ -126,7 +207,6 @@ exports.criarPaciente = async (req, res) => {
   }
 };
 
-// Lista pacientes com dados do usuário vinculado
 exports.listarPacientes = async (req, res) => {
   try {
     const result = await pool.query(`

@@ -34,7 +34,7 @@ function verificarAdmin(req, res, next) {
   next();
 }
 
-// ✅ Exporta tudo em um só lugar
+// Exporta todas as funções juntas
 module.exports = {
   verificarToken,
   verificarPapeis,

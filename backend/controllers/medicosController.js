@@ -3,15 +3,11 @@ const pool = require('../models/db');
 // Listar todos os médicos com dados do usuário
 exports.listarMedicos = async (req, res) => {
   try {
-    const resultado = await pool.query(`
-      SELECT m.id, u.nome, u.email, m.especialidade, m.crm
-      FROM consultorio.medicos m
-      JOIN consultorio.usuarios u ON m.usuario_id = u.id
-      ORDER BY u.nome
-    `);
-    res.json(resultado.rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    const resultado = await pool.query('SELECT id, nome, crm, especialidade_id FROM consultorio.medicos ORDER BY nome');
+    return res.json(resultado.rows);
+  } catch (error) {
+    console.error('Erro ao listar médicos:', error);
+    return res.status(500).json({ erro: 'Erro interno ao buscar médicos' });
   }
 };
 

@@ -35,18 +35,17 @@ async function buscarPaciente(req, res) {
 
 // Criar novo paciente
 async function criarPaciente(req, res) {
-  const { nome, idade, email, telefone } = req.body;
+  const { nome, idade, email, telefone, cpf } = req.body;
 
-  // Validação básica dos campos obrigatórios
-  if (!nome || !email) {
-    return res.status(400).json({ erro: "Nome e email são obrigatórios" });
+  if (!nome || !email || !cpf) {
+    return res.status(400).json({ erro: "Nome, email e CPF são obrigatórios" });
   }
 
   try {
     const resultado = await db.query(
-      `INSERT INTO consultorio.pacientes (nome, idade, email, telefone) 
-       VALUES ($1, $2, $3, $4) RETURNING *`,
-      [nome, idade || null, email, telefone || null]
+      `INSERT INTO consultorio.pacientes (nome, idade, email, telefone, cpf) 
+       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [nome, idade || null, email, telefone || null, cpf]
     );
 
     return res.status(201).json(resultado.rows[0]);
