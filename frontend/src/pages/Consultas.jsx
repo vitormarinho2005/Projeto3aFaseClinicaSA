@@ -35,7 +35,6 @@ export default function Consultas() {
   async function listarConsultas() {
     try {
       const res = await api.get("/consultas");
-      // Garante que consultas seja array antes de setar
       if (Array.isArray(res.data)) {
         setConsultas(res.data);
       } else if (Array.isArray(res.data.consultas)) {
@@ -68,25 +67,34 @@ export default function Consultas() {
   async function cadastrar(e) {
     e.preventDefault();
     setErro("");
-
+  
     if (!pacienteId || !dataHora || !medicoId) {
       setErro("Por favor, preencha todos os campos para agendar a consulta.");
       return;
     }
-
+  
+    const [data, horario] = dataHora.split("T");
+    if (!data || !horario) {
+      setErro("Formato inválido para data/hora.");
+      return;
+    }
+  
+    // Formata horário para hh:mm:ss
+    let horarioFormatado = horario.length === 5 ? horario + ":00" : horario;
+  
+    // Se horário for "00:00:00", substitui para "08:00:00"
+    if (horarioFormatado === "00:00:00") {
+      horarioFormatado = "08:00:00";
+    }
+  
     try {
-      // dataHora esperado: "2025-07-15T15:00"
-      const [data, horario] = dataHora.split("T");
-      const horarioFormatado = horario.length === 5 ? horario + ":00" : horario;
-
       await api.post("/consultas", {
         pacienteId,
+        medicoId,
         data,
         horario: horarioFormatado,
-        medicoId,
       });
-
-      // Limpar campos e recarregar consultas
+  
       setPacienteId("");
       setMedicoId("");
       setDataHora("");
@@ -96,7 +104,7 @@ export default function Consultas() {
       setErro("Erro ao agendar consulta");
     }
   }
-
+  
   return (
     <>
       <Navbar />
@@ -137,6 +145,8 @@ export default function Consultas() {
             className="border p-2 rounded"
             value={dataHora}
             onChange={(e) => setDataHora(e.target.value)}
+            min="2023-01-01T08:00"
+            max="2030-12-31T18:00"
           />
 
           <button

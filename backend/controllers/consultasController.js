@@ -49,21 +49,37 @@ async function buscarConsulta(req, res) {
   }
 }
 
-// Criar nova consulta (corrigido, sem o campo 'horario')
+// Criar nova consulta (corrigido, com o campo 'horario')
 async function criarConsulta(req, res) {
-  console.log("Recebido no body:", req.body);
+  let { pacienteId, medicoId, data, horario } = req.body;
 
-  const { pacienteId, data, medicoId } = req.body;
+  console.log("Dados recebidos para criar consulta:", { pacienteId, medicoId, data, horario });
+
+  if (!pacienteId || !medicoId || !data || !horario) {
+    return res.status(400).json({ erro: "Campos 'pacienteId', 'medicoId', 'data' e 'horario' são obrigatórios." });
+  }
+
+  // Normaliza horário para o formato hh:mm:ss
+  if (horario.length === 5) { // ex: "15:30" -> "15:30:00"
+    horario = horario + ":00";
+  }
+
+  // Se horário for "00:00" ou "00:00:00", substitui por "08:00:00"
+  if (horario === "00:00" || horario === "00:00:00") {
+    horario = "08:00:00";
+  }
 
   try {
     const resultado = await db.query(
-      "INSERT INTO consultorio.consultas (paciente_id, data, medico_id) VALUES ($1, $2, $3) RETURNING *",
-      [pacienteId, data, medicoId]
+      `INSERT INTO consultorio.consultas (paciente_id, medico_id, data, horario, status)
+       VALUES ($1, $2, $3, $4, 'agendada') RETURNING *`,
+      [pacienteId, medicoId, data, horario]
     );
     res.status(201).json(resultado.rows[0]);
   } catch (err) {
     console.error("Erro ao criar consulta:", err);
-    res.status(500).json({ erro: "Erro ao criar consulta" });
+    // Enviar erro completo para facilitar debug (remova em produção)
+    res.status(500).json({ erro: "Erro ao criar consulta", detalhes: err.message });
   }
 }
 
